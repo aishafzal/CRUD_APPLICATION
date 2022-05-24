@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const bodyparser = require('body-parser');
 const user = require('./user');
+const fs = require('fs');
 mongoose.connect('mongodb://127.0.0.1:27017/ead');
 const app = express();
 app.set('view engine','ejs');
@@ -60,12 +61,34 @@ app.get('/edit/:id',function(req,res){
 })
 
 app.post('/update/:id',upload,function(req,res)
-{
-    res.redirect('/')
- user.findByIdAndUpdate(req.body,function(req,res){
-     console.log(res);
-     
+{    res.redirect('/');
+    let id = req.params.id;
+    let new_image= "";
+    if(req.file){new_image=req.file.fieldname
+    try{fs.unlinkSync('./upload/' + req.body.old_image)}
+    catch(err){console.log(err)} }
+     else{new_image = req.body.old_image;}
+
+     user.findByIdAndUpdate(id,{name:req.body.name,
+    email:req.body.email,
+phone:req.body.phone,
+image:new_image},(err,res) => {
+    if(err){res.json({msg: err.msg ,err})}
+    else {};
+   
+})
  })
+
+app.get('/delete/:id',function(req,res){
+    res.redirect('/');
+    let id = req.params.id;
+    user.findByIdAndRemove(id,function(err,res){
+        if(res.image !=null){try{fs.unlinkSync('./upload'+res.image);}
+    catch(err){console.log(err)}
+    if(err){res.json({msg: err.msg ,err})}
+    else {};
+    }
+    })
 })
 
 app.listen(5000);
